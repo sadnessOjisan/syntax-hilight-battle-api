@@ -7,10 +7,10 @@ steps:
         "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA",
         ".",
       ]
-    timeout: "1200s"
+    timeout: 1200s
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA"]
-    timeout: "1200s"
+    timeout: 1200s
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
@@ -23,7 +23,7 @@ steps:
       - "asia-northeast1"
       - "--platform"
       - "managed"
-    timeout: "1200s"
+    timeout: 1200s
 images:
   - "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA"
-timeout: "1200s"
+timeout: 1200s
