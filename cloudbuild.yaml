@@ -25,6 +25,6 @@ steps:
       - "asia-northeast1"
       - "--platform"
       - "managed"
-timeout: 1200s
 images:
   - "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA"
+timeout: 1200s
