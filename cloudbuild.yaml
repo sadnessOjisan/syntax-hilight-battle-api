@@ -1,5 +1,4 @@
 steps:
-  # Build the container image
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
@@ -8,11 +7,10 @@ steps:
         "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA",
         ".",
       ]
-    timeout: 1200s
-  # Push the container image to Container Registry
+    timeout: 1000s
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA"]
-  # Deploy container image to Cloud Run
+    timeout: 1000s
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
@@ -25,6 +23,7 @@ steps:
       - "asia-northeast1"
       - "--platform"
       - "managed"
+    timeout: 1000s
 images:
   - "gcr.io/$PROJECT_ID/syntax-hilight-battle-api:$COMMIT_SHA"
 timeout: 1200s
