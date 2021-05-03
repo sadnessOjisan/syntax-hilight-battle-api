@@ -1,15 +1,43 @@
-use actix_web::{
-    error, post, get,web, App, HttpRequest, HttpResponse, HttpServer, Responder,
-};
+#[macro_use]
+extern crate diesel;
+
+use actix_web::{error, get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use diesel::mysql::MysqlConnection;
+use diesel::prelude::*;
+use dotenv::dotenv;
 use serde::Deserialize;
+use std::env;
+use model::{Post, NewPost};
+
+mod model;
+mod schema;
 
 #[derive(Deserialize)]
 struct Save {
     winner_id: i32,
 }
 
+pub fn establish_connection() -> MysqlConnection {
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    MysqlConnection::establish(&database_url)
+        .expect(&format!("Error connecting to {}", database_url))
+}
+
+fn create_post<'a>(conn: &MysqlConnection, title: &'a str, body: &'a str) {
+    use schema::posts;
+    let new_post = NewPost {
+        title: title,
+        body: body,
+    };
+
+    diesel::insert_into(posts::table).values(&new_post).execute(conn);
+}
+
 #[post("/save")]
 async fn greet(save: web::Json<Save>) -> impl Responder {
+    let connection = establish_connection();
+    create_post(&connection, "hoge"," fuga");
     HttpResponse::Ok().body(format!("Hello {}!", save.winner_id))
 }
 
@@ -23,9 +51,7 @@ fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error
 
     let detail = err.to_string();
     let resp = match &err {
-        JsonPayloadError::ContentType => {
-            HttpResponse::UnsupportedMediaType().body(detail)
-        }
+        JsonPayloadError::ContentType => HttpResponse::UnsupportedMediaType().body(detail),
         JsonPayloadError::Deserialize(json_err) if json_err.is_data() => {
             HttpResponse::UnprocessableEntity().body(detail)
         }
