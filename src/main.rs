@@ -4,18 +4,18 @@ use actix_web::{
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct Info {
-    name: String,
+struct Save {
+    winner_id: i32,
 }
 
 #[post("/save")]
-async fn greet(name: web::Json<Info>) -> impl Responder {
-    HttpResponse::Ok().body(format!("Hello {}!", name.name))
+async fn greet(save: web::Json<Save>) -> impl Responder {
+    HttpResponse::Ok().body(format!("Hello {}!", save.winner_id))
 }
 
 #[get("/battle")]
-async fn battle(name: web::Json<Info>) -> impl Responder {
-    HttpResponse::Ok().body(format!("Hello {}!", name.name))
+async fn battle() -> impl Responder {
+    HttpResponse::Ok().body(format!("Hello A!"))
 }
 
 fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {
