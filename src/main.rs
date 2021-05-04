@@ -14,7 +14,8 @@ mod schema;
 
 #[derive(Deserialize)]
 struct Save {
-    winner_id: i32,
+    winner_id: i64,
+    looser_id: i64
 }
 
 #[derive(Serialize)]
@@ -72,9 +73,9 @@ fn get_masters(conn: &MysqlConnection) -> Vec<Hilight> {
 
 #[post("/save")]
 async fn save(save: web::Json<Save>) -> impl Responder {
-    let connection = establish_connection();
-    create_post(&connection, "hoge", " fuga");
-    HttpResponse::Ok().body(format!("Hello {}!", save.winner_id))
+    let conn = establish_connection();
+    save_result(&conn, &save.winner_id, &save.looser_id);
+    HttpResponse::Ok().content_type("application/json").body("ok")
 }
 
 #[get("/battle")]
