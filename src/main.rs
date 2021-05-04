@@ -7,7 +7,7 @@ use diesel::prelude::*;
 use dotenv::dotenv;
 use serde::Deserialize;
 use std::env;
-use model::{Post, NewPost};
+use model::{Post, NewPost, Results, Hilights};
 
 mod model;
 mod schema;
@@ -32,6 +32,23 @@ fn create_post<'a>(conn: &MysqlConnection, title: &'a str, body: &'a str) {
     };
 
     diesel::insert_into(posts::table).values(&new_post).execute(conn);
+}
+
+fn save_result<'a>(conn: &MysqlConnection, winner_id: &'a i64, loser_id: &'a i64) {
+    use schema::results;
+    let results = Results {
+        winner_id: winner_id,
+        loser_id: loser_id,
+    };
+
+    diesel::insert_into(results::table).values(&results).execute(conn);
+}
+
+fn get_masters(conn: &MysqlConnection)-> Vec<Hilights> {
+   let res =  schema::hilights::dsl::hilights
+         .load::<Hilights>(conn)
+        .expect("Error loading users");
+        res
 }
 
 #[post("/save")]
@@ -69,7 +86,7 @@ async fn main() -> std::io::Result<()> {
                 .error_handler(json_error_handler),
         )
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
