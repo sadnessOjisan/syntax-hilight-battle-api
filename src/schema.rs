@@ -22,8 +22,4 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(
-    hilights,
-    posts,
-    results,
-);
+allow_tables_to_appear_in_same_query!(hilights, posts, results,);

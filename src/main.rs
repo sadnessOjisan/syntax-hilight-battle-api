@@ -5,9 +5,9 @@ use actix_web::{error, get, post, web, App, HttpRequest, HttpResponse, HttpServe
 use diesel::mysql::MysqlConnection;
 use diesel::prelude::*;
 use dotenv::dotenv;
-use serde::Deserialize;
+use model::{Hilights, NewPost, Post, Results};
+use serde::{Deserialize, Serialize};
 use std::env;
-use model::{Post, NewPost, Results, Hilights};
 
 mod model;
 mod schema;
@@ -15,6 +15,17 @@ mod schema;
 #[derive(Deserialize)]
 struct Save {
     winner_id: i32,
+}
+
+#[derive(Serialize)]
+struct Hilight {
+    id: u64,
+    name: String,
+}
+
+#[derive(Serialize)]
+struct HilightResponse {
+    data: Vec<Hilight>,
 }
 
 pub fn establish_connection() -> MysqlConnection {
@@ -31,7 +42,9 @@ fn create_post<'a>(conn: &MysqlConnection, title: &'a str, body: &'a str) {
         body: body,
     };
 
-    diesel::insert_into(posts::table).values(&new_post).execute(conn);
+    diesel::insert_into(posts::table)
+        .values(&new_post)
+        .execute(conn);
 }
 
 fn save_result<'a>(conn: &MysqlConnection, winner_id: &'a i64, loser_id: &'a i64) {
@@ -41,26 +54,36 @@ fn save_result<'a>(conn: &MysqlConnection, winner_id: &'a i64, loser_id: &'a i64
         loser_id: loser_id,
     };
 
-    diesel::insert_into(results::table).values(&results).execute(conn);
+    diesel::insert_into(results::table)
+        .values(&results)
+        .execute(conn);
 }
 
-fn get_masters(conn: &MysqlConnection)-> Vec<Hilights> {
-   let res =  schema::hilights::dsl::hilights
-         .load::<Hilights>(conn)
+fn get_masters(conn: &MysqlConnection) -> Vec<Hilight> {
+    let mut hilights = Vec::new();
+    let res = schema::hilights::dsl::hilights
+        .load::<Hilights>(conn)
         .expect("Error loading users");
-        res
+    for r in res {
+        hilights.push(Hilight {id: r.id ,name: r.name });
+    };
+    hilights
 }
 
 #[post("/save")]
-async fn greet(save: web::Json<Save>) -> impl Responder {
+async fn save(save: web::Json<Save>) -> impl Responder {
     let connection = establish_connection();
-    create_post(&connection, "hoge"," fuga");
+    create_post(&connection, "hoge", " fuga");
     HttpResponse::Ok().body(format!("Hello {}!", save.winner_id))
 }
 
 #[get("/battle")]
 async fn battle() -> impl Responder {
-    HttpResponse::Ok().body(format!("Hello A!"))
+    let connection = establish_connection();
+    let data = get_masters(&connection);
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .json(data)
 }
 
 fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {
@@ -80,7 +103,7 @@ fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
-        App::new().service(greet).service(battle).app_data(
+        App::new().service(save).service(battle).app_data(
             web::JsonConfig::default()
                 // register error_handler for JSON extractors.
                 .error_handler(json_error_handler),
