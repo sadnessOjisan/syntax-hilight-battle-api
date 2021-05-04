@@ -9,3 +9,18 @@ use DB名前
 
 show tables;
 ```
+
+## table
+
+hilight
+
+id
+name
+
+--
+
+result
+
+winner_id
+loser_id
+created_at
