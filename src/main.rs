@@ -15,7 +15,7 @@ mod schema;
 #[derive(Deserialize)]
 struct Save {
     winner_id: i64,
-    looser_id: i64
+    looser_id: i64,
 }
 
 #[derive(Serialize)]
@@ -66,8 +66,11 @@ fn get_masters(conn: &MysqlConnection) -> Vec<Hilight> {
         .load::<Hilights>(conn)
         .expect("Error loading users");
     for r in res {
-        hilights.push(Hilight {id: r.id ,name: r.name });
-    };
+        hilights.push(Hilight {
+            id: r.id,
+            name: r.name,
+        });
+    }
     hilights
 }
 
@@ -75,7 +78,9 @@ fn get_masters(conn: &MysqlConnection) -> Vec<Hilight> {
 async fn save(save: web::Json<Save>) -> impl Responder {
     let conn = establish_connection();
     save_result(&conn, &save.winner_id, &save.looser_id);
-    HttpResponse::Ok().content_type("application/json").body("ok")
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body("ok")
 }
 
 #[get("/battle")]
