@@ -114,7 +114,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         // FYI: https://docs.rs/actix-cors/0.5.4/actix_cors/
         let cors = Cors::default()
-            .allowed_origin("https://syntax-hilight-battle-client.pages.dev/")
+            .allowed_origin("https://syntax-hilight-battle-client.pages.dev")
             .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
