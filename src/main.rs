@@ -1,7 +1,10 @@
 #[macro_use]
 extern crate diesel;
 
-use actix_web::{error, get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_cors::Cors;
+use actix_web::{
+    error, get, http, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,
+};
 use diesel::mysql::MysqlConnection;
 use diesel::prelude::*;
 use dotenv::dotenv;
@@ -109,11 +112,22 @@ fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
-        App::new().service(save).service(battle).app_data(
-            web::JsonConfig::default()
-                // register error_handler for JSON extractors.
-                .error_handler(json_error_handler),
-        )
+        let cors = Cors::default()
+            .allowed_origin("https://www.rust-lang.org/")
+            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".rust-lang.org"))
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+        App::new()
+            .wrap(cors)
+            .service(save)
+            .service(battle)
+            .app_data(
+                web::JsonConfig::default()
+                    // register error_handler for JSON extractors.
+                    .error_handler(json_error_handler),
+            )
     })
     .bind("0.0.0.0:8080")?
     .run()
