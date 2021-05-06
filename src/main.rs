@@ -112,10 +112,10 @@ fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
+        // FYI: https://docs.rs/actix-cors/0.5.4/actix_cors/
         let cors = Cors::default()
-            .allowed_origin("https://www.rust-lang.org/")
-            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".rust-lang.org"))
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_origin("https://syntax-hilight-battle-client.pages.dev//")
+            .allowed_methods(vec!["GET", "POST", "DELETE", "PUT"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .max_age(3600);
